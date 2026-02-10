@@ -1,79 +1,193 @@
-# Credit Card Fraud Detection – Data Preparation Pipeline
+# Credit Card Fraud Detection
 
-## Contexte et objectif
-Ce projet s’inscrit dans le cadre du cours *IFM30542 – Initiation à l’intelligence artificielle* (Hiver 2026).
-L’objectif est de concevoir un pipeline complet de préparation de données pour un problème réel de
-détection de fraude par carte bancaire, en appliquant les bonnes pratiques de data science et de
-machine learning.
+## Project Overview
 
-Le projet met l’accent sur la compréhension des données, leur transformation, la gestion du
-déséquilibre des classes et la livraison d’un jeu de données prêt pour l’apprentissage automatique.
+This project aims to build a machine learning model capable of detecting fraudulent credit card transactions in a highly imbalanced dataset.
+The objective is to compare different strategies for handling class imbalance and identify the best trade-off between fraud detection performance and false positive rate.
 
 ---
 
-## Données
-- *Dataset* : Credit Card Fraud Detection (Kaggle)
-- *Format* : CSV
-- *Taille* : ~284 000 transactions, 31 variables
-- *Description* :
-  - Variables V1 à V28 : variables anonymisées issues d’une transformation PCA
-  - Time : temps écoulé depuis la première transaction
-  - Amount : montant de la transaction
-  - Class : variable cible (0 = transaction normale, 1 = fraude)
+## Business Context
 
-⚠️ Le dataset n’est pas versionné dans ce dépôt conformément aux bonnes pratiques Git.
-Seul le code permettant de le charger et de le traiter est fourni.
+Credit card fraud detection is a critical task in the financial industry:
+
+* Fraudulent transactions are *rare but costly*
+* Missing fraud cases leads to financial losses
+* Excessive false alerts negatively impact customer experience
+
+The main challenge is therefore to find the *right balance between recall and precision*.
 
 ---
 
-## Méthodologie
-Le projet suit les étapes suivantes :
+## Dataset
 
-1. *Analyse initiale du problème*
-   - Compréhension du contexte de fraude
-   - Identification du type de tâche (classification supervisée)
+The dataset contains anonymized credit card transactions.
 
-2. *Exploration et diagnostic des données (EDA)*
-   - Statistiques descriptives
-   - Analyse des distributions et des asymétries
-   - Visualisation du déséquilibre des classes
-   - Identification des défis liés aux données
+### Characteristics
 
-3. *Préparation et transformations*
-   - Transformation logarithmique de la variable Amount
-   - Feature engineering temporel à partir de la variable Time
-   - Conservation des variables PCA sans modification
+* Highly imbalanced dataset
+* Fraudulent transactions represent ~0.2% of all observations
+* Most variables (V1–V28) are PCA-transformed features
+* Includes transaction amount and time information
 
-4. *Gestion du déséquilibre des classes*
-   - Analyse de l’impact du déséquilibre
-   - Préparation des données pour des techniques de rééquilibrage
+### Target
 
-5. *Validation du jeu de données final*
-   - Dataset propre, transformé et prêt pour l’apprentissage automatique
+* Class = 0 → Normal transaction
+* Class = 1 → Fraudulent transaction
 
 ---
 
-## Résultats clés
-- Mise en évidence d’un *déséquilibre extrême* de la variable cible
-- Identification d’une *forte asymétrie* sur la variable Amount
-- Justification des transformations appliquées
-- Préparation d’un dataset robuste pour la modélisation
+## Exploratory Data Analysis (EDA)
+
+Key findings:
+
+* Strong class imbalance
+* Skewed distribution of transaction amounts
+* Presence of outliers
+* Clustered transaction behaviors
+* Overlap between fraudulent and normal transactions
+
+A PCA projection showed that fraud cases are dispersed and sometimes mixed with normal transactions, making the classification task challenging.
 
 ---
 
-## Technologies utilisées
-- Python
-- pandas
-- numpy
-- matplotlib
-- seaborn
-- scikit-learn
-- Jupyter Notebook
-- Git & GitHub
+## Data Preprocessing & Feature Engineering
+
+Main transformations:
+
+* Log transformation of the Amount variable
+* Creation of temporal features:
+
+  * Hour
+  * Is_Night
+* Behavioral feature:
+
+  * Mean_amount_hour
+* Removal of redundant or non-informative variables
+* Final dataset contains only relevant numerical features
+* No missing values
 
 ---
 
-## Auteur
-- Nom : Cabrel
-- GitHub : https://github.com/Cabrel1701
-- Cours : IFM30542 – Initiation à l’intelligence artificielle
+## Handling Class Imbalance
+
+Several techniques were evaluated:
+
+### Baseline (No Resampling)
+
+* High precision
+* Moderate recall
+
+### Class Weight Adjustment
+
+* Strong increase in recall
+* Significant increase in false positives
+
+### Tomek Links (Boundary Cleaning)
+
+* Minimal impact (dataset already clean)
+
+### Random Oversampling
+
+* Higher recall
+* Lower precision
+
+### SMOTE and Tomek + SMOTE
+
+* High fraud detection
+* Large number of false alerts
+
+---
+
+## Model Used
+
+*Logistic Regression*
+
+Chosen because:
+
+* Interpretable
+* Robust baseline for classification
+* Common in fraud detection systems
+
+---
+
+## Results Summary
+
+| Method              | Recall    | Precision | PR-AUC         | Observation              |
+| ------------------- | --------- | --------- | -------------- | ------------------------ |
+| Baseline            | Medium    | High      | Best           | Best overall balance     |
+| Class Weight        | Very High | Very Low  | Slight drop    | Too many false positives |
+| Tomek Links         | No change | No change | No change      | Dataset already clean    |
+| Random Oversampling | Very High | Very Low  | Similar        | Over-sensitive model     |
+| Tomek + SMOTE       | Very High | Very Low  | Slightly lower | No added benefit         |
+
+---
+
+## Key Insights
+
+* Class imbalance does not necessarily mean poor performance
+* PCA features are highly discriminative
+* Resampling mainly shifts the decision boundary
+* Cleaning methods are only useful when significant noise exists
+* Model selection depends on business trade-offs
+
+---
+
+## Final Model Choice
+
+The baseline Logistic Regression model provides:
+
+* Best precision
+* Highest PR-AUC
+* Acceptable fraud detection rate
+* Lowest number of false alerts
+
+It represents the most stable solution for a realistic operational context.
+
+---
+
+## Possible Improvements
+
+* Decision threshold optimization
+* Advanced models (Random Forest, XGBoost)
+* Cost-sensitive learning
+* Anomaly detection approaches
+* Real-time deployment pipeline
+
+---
+
+## Technologies Used
+
+* Python
+* Pandas
+* NumPy
+* Scikit-learn
+* Imbalanced-learn
+* Seaborn & Matplotlib
+* Jupyter Notebook
+
+---
+
+## Project Structure
+
+
+credit-card-fraud-detection/
+│
+├── Credit_Card_Fraud_Detection_Final.ipynb
+├── README.md
+├── .gitignore
+└── figures/
+
+
+---
+
+## Author
+
+Cabrel
+
+---
+
+## Conclusion
+
+Fraud detection is a complex and highly imbalanced classification problem.
+This project demonstrates that improving recall often increases false positives, requiring a careful balance between statistical performance and operational constraints.
